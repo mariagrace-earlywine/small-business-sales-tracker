@@ -1,0 +1,22 @@
+# Virtual environments
+.venv/
+venv/
+
+# Python bytecode / cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# PyCharm / JetBrains (recommended to ignore)
+.idea/
+
+# Local environment variables (if you ever add them)
+.env
+
+
+
