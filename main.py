@@ -1,5 +1,6 @@
 import csv
 from datetime import datetime
+from decimal import Decimal, InvalidOperation
 
 
 #This list will hold all your sales while the program is running
@@ -17,7 +18,7 @@ def save_sales_to_csv():
 
         writer.writeheader()  # first row: column names
         for sale in sales:
-            writer.writerow(sale)
+            writer.writerow({**sale, "amount": str(sale["amount"])})
 
     print(f"Saved {len(sales)} sale(s) to {FILENAME}.")
 
@@ -33,8 +34,8 @@ def load_sales_from_csv():
             for row in reader:
                 # row values are strings, so convert amount to float
                 try:
-                    amount = decimal(row["amount"])
-                except (KeyError, ValueError):
+                    amount = Decimal(row["amount"].strip())
+                except (KeyError, InvalidOperation, ValueError):
                     continue #skip bad rows
 
                 sale = {
@@ -74,8 +75,8 @@ def add_sale():
     # Try to turn the amount into a number (decimal).
     # If it fails, we don't add the sale.
     try:
-        amount = decimal(amount_str)
-    except ValueError:
+        amount = Decimal(amount_str.strip())
+    except (InvalidOperation, ValueError):
         print("Invalid amount. Sale not saved.")
         return
 
@@ -100,7 +101,7 @@ def list_sales():
         print("No sales recorded yet.")
         return
 
-    total = 0.0
+    total = Decimal("0.00")
     for idx, sale in enumerate(sales, start=1):
         print(f"{idx}. {sale['date']} | {sale['customer']} | "
               f"{sale['amount']:.2f} | {sale['description']}")
@@ -118,7 +119,7 @@ def show_summary():
         print("No sales recorded yet.")
         return
 
-    total = 0.0
+    total = Decimal("0.00")
     count = len(sales)
     max_sale = sales[0]
 
@@ -127,7 +128,7 @@ def show_summary():
         if sale["amount"] > max_sale["amount"]:
             max_sale = sale
 
-    average = total / count
+    average = total / Decimal(count)
 
     print(f"Number of sales: {count}")
     print(f"Total sales: ${total:.2f}")
@@ -163,7 +164,7 @@ def show_monthly_total():
     # We'll look for dates that start with "YYYY-MM-"
     prefix = f"{year}-{month_formatted}-"
 
-    total = 0.0
+    total = Decimal("0.00")
     count = 0
 
     for sale in sales:
@@ -195,7 +196,7 @@ def show_yearly_total():
     # We'll look for dates that start with "YYYY"
     prefix = f"{year}"
 
-    total = 0.0
+    total = Decimal("0.00")
     count = 0
 
     for sale in sales:
