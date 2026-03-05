@@ -1,8 +1,11 @@
 import csv
+from datetime import datetime
+
 
 #This list will hold all your sales while the program is running
 sales = []
 FILENAME = "sales.csv" # this file will live in the same folder as main.py
+
 
 def save_sales_to_csv():
     """
@@ -18,9 +21,11 @@ def save_sales_to_csv():
 
     print(f"Saved {len(sales)} sale(s) to {FILENAME}.")
 
+
 def load_sales_from_csv():
+    sales.clear()
     """
-    Load sales from the CSV file (if it exist) into the sales list.
+    Load sales from the CSV file (if it exists) into the sales list.
     """
     try:
         with open(FILENAME, newline="", encoding="utf-8") as f:
@@ -28,7 +33,7 @@ def load_sales_from_csv():
             for row in reader:
                 # row values are strings, so convert amount to float
                 try:
-                    amount = float(row["amount"])
+                    amount = decimal(row["amount"])
                 except (KeyError, ValueError):
                     continue #skip bad rows
 
@@ -53,15 +58,23 @@ def add_sale():
     Asks the user to enter their sales and adds them to the sales list.
     """
     print("\n=== Add a new sale ===")
-    date = input("Date (YYYY-MM-DD): ")
+    date = input("Date (YYYY-MM-DD): ").strip()
+
+    # Validate date format (YYYY-MM-DD)
+    try:
+        datetime.strptime(date, "%Y-%m-%d")
+    except ValueError:
+        print("Invalid date format. Please use YYYY-MM-DD.")
+        return
+
     customer = input("Customer name: ")
     description = input("Products / notes: ")
     amount_str = input("Total amount (just numbers, e.g. 45.50): ")
 
-    # Try to turn the amount into a number (float).
+    # Try to turn the amount into a number (decimal).
     # If it fails, we don't add the sale.
     try:
-        amount = float(amount_str)
+        amount = decimal(amount_str)
     except ValueError:
         print("Invalid amount. Sale not saved.")
         return
@@ -93,7 +106,7 @@ def list_sales():
               f"{sale['amount']:.2f} | {sale['description']}")
         total += sale["amount"]
 
-    print(f"\nTotal sales: ${total:2f}")
+    print(f"\nTotal sales: ${total:.2f}")
 
 
 def show_summary():
@@ -167,6 +180,39 @@ def show_monthly_total():
         print(f"Total sales: ${total:.2f}")
         print(f"Average sale: ${total / count:.2f} ")
 
+
+def show_yearly_total():
+    """
+    Show total sales for a specific year.
+    """
+    print("\n=== Yearly Total ===")
+    if not sales:
+        print("No sales recorded yet.")
+        return
+
+    year = input("Year (e.g. 2025): ").strip()
+
+    # We'll look for dates that start with "YYYY"
+    prefix = f"{year}"
+
+    total = 0.0
+    count = 0
+
+    for sale in sales:
+        date = sale.get("date", "")
+        if date.startswith(prefix):
+            count += 1
+            total += sale["amount"]
+
+    if count == 0:
+        print(f"No sales found for {year}.")
+    else:
+        print(f"\nSales for {year}:")
+        print(f"Number of sales: {count}")
+        print(f"Total sales: ${total:.2f}")
+        print(f"Average sale: ${total / count:.2f} ")
+
+
 def main():
     """
     Main menu loop.
@@ -179,9 +225,10 @@ def main():
         print("2) List sales")
         print("3) Show summary")
         print("4) Show monthly total")
-        print("5) Exit")
+        print("5) Show yearly total")
+        print("6) Exit")
 
-        choice = input("Choose an option (1-5): ")
+        choice = input("Choose an option (1-6): ")
 
         if choice == "1":
             add_sale()
@@ -192,10 +239,12 @@ def main():
         elif choice == "4":
             show_monthly_total()
         elif choice == "5":
+            show_yearly_total()
+        elif choice == "6":
             print("Goodbye! 💗")
             break
         else:
-            print("Please enter 1, 2, 3, 4 or 5.")
+            print("Please enter 1, 2, 3, 4, 5, or 6.")
 
 if __name__ == "__main__":
     main()
